@@ -252,7 +252,7 @@ def banner():
             dots.append(f'<circle class="{strand}" cx="{x:.1f}" cy="{base}" r="3.6" fill="{color}" '
                         f'style="animation-delay:{d - off:.2f}s"/>')
     helix = "".join(dots)
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="Medical vibe coder · AI researcher · health developer">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="Médico · vibe coder · AI research · health dev">
 <style>
 .sa,.sb{{animation:wave {period}s ease-in-out infinite;transform-box:fill-box;transform-origin:center}}
 @keyframes wave{{0%,100%{{transform:translateY(-{amp}px) scale(1.25);opacity:1}}50%{{transform:translateY({amp}px) scale(.6);opacity:.35}}}}
@@ -270,8 +270,8 @@ def banner():
 <rect width="1000" height="300" rx="18" fill="url(#bg)"/>
 <g stroke="#fff" stroke-opacity=".04">{grid}</g>
 <g class="float">
-<text x="500" y="112" text-anchor="middle" font-family="{MONO}" font-size="62" font-weight="800" letter-spacing="3" fill="url(#g)" filter="url(#glow)">MEDICAL VIBE CODER</text>
-<text x="500" y="150" text-anchor="middle" font-family="{MONO}" font-size="15" letter-spacing="6" fill="#7d8b99">AI RESEARCHER · HEALTH DEVELOPER</text>
+<text x="500" y="112" text-anchor="middle" font-family="{MONO}" font-size="62" font-weight="800" letter-spacing="3" fill="url(#g)" filter="url(#glow)">MÉDICO · VIBE CODER</text>
+<text x="500" y="150" text-anchor="middle" font-family="{MONO}" font-size="15" letter-spacing="5" fill="#7d8b99">AI RESEARCH · HEALTH DEV · COOL RANDOM PROJECTS</text>
 </g>
 {texts}
 <g filter="url(#glow)">{helix}</g>
