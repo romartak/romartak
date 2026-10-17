@@ -12,7 +12,9 @@ from html import escape
 from pathlib import Path
 
 USER = os.environ.get("PROFILE_USER", "romartak")
-OUT = Path(__file__).resolve().parent.parent / "profiles" / "default"
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "profiles" / "default"
+RAMP = " .:-=+*#%@"
 W, PAD = 800, 24
 MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,'DejaVu Sans Mono',monospace"
 
@@ -39,13 +41,12 @@ def api(path):
 
 
 def fetch():
-    data = dict(name=USER, bio="médico · programador", repos=2, followers=0,
+    data = dict(name=USER, bio="médico · vibe coder", repos=2, followers=0,
                 following=0, stars=0, langs={"Shell": 60, "Python": 30, "JavaScript": 10}, since="2026",
                 pinned=("sdrkit", "Analizador de espectro y radio multimodo en una Raspberry Pi Zero 2 W + RTL-SDR."))
     try:
         u = api(f"/users/{USER}")
-        data.update(name=u.get("name") or USER, bio=u.get("bio") or data["bio"],
-                    repos=u["public_repos"], followers=u["followers"],
+        data.update(name=u.get("name") or USER, repos=u["public_repos"], followers=u["followers"],
                     following=u["following"], since=u["created_at"][:4])
         repos = [r for r in api(f"/users/{USER}/repos?per_page=100&type=owner")
                  if not r["fork"]]
@@ -73,6 +74,11 @@ def wrap(text, n):
     return lines + [cur] if cur else lines
 
 
+def ascii_avatar():
+    """Lee assets/avatar.txt (rampa vacío→denso)."""
+    return (ROOT / "assets" / "avatar.txt").read_text(encoding="utf-8").splitlines()
+
+
 def render(d, t):
     c, o = t, []
     t_ = lambda x, y, s, size=12, fill=None, anchor="start", weight=400: o.append(
@@ -88,26 +94,37 @@ def render(d, t):
         t_(x + 14, y + 26, label, 10, c["dim"])
 
     y = 0
+    AW, GAP = 268, 12                      # avatar a la izquierda
+    RX, RW = AW + GAP, W - AW - GAP        # columna derecha
+    avatar = ascii_avatar()
+    LH = 6.9
+    ah = int(40 + len(avatar) * LH + 8)
+    mh = (ah - 130 - 16 - 12) // 2
+    # el avatar va siempre sobre panel oscuro, también en el tema claro
+    o.append(f'<rect x="0" y="0" width="{AW}" height="{ah}" fill="{THEMES["dark"]["bg"]}" stroke="{c["line"]}"/>')
+    t_(14, 26, "// avatar", 10, THEMES["dark"]["dim"])
+    o.append(f'<text font-family="{MONO}" font-size="6.7"  fill="{THEMES["dark"]["acc"]}" xml:space="preserve">'
+             + "".join(f'<tspan x="{(AW - 62 * 4.02) / 2:.1f}" y="{y + 40 + i * LH:.1f}">{escape(r)}</tspan>'
+                       for i, r in enumerate(avatar)) + "</text>")
+
     # Cabecera
-    box(0, y, W, 130, "// ident")
+    box(RX, y, RW, 130, "// ident")
     for i, row in enumerate(ASCII_NAME):
-        t_(PAD, y + 56 + i * 20, row, 22, c["acc"], weight=700)
-    t_(PAD, y + 104, f"@{USER}", 14, c["acc2"])
-    t_(PAD + 110, y + 104, d["bio"], 12, c["dim"])
-    t_(W - PAD, y + 56, "🩺 médico", 12, c["fg"], "end")
-    t_(W - PAD, y + 76, "💻 programador", 12, c["fg"], "end")
-    t_(W - PAD, y + 104, f"[ desde {d['since']} ]", 12, c["dim"], "end")
+        t_(RX + 18, y + 56 + i * 20, row, 20, c["acc"], weight=700)
+    t_(RX + 18, y + 104, f"@{USER}", 14, c["acc2"])
+    t_(RX + 18 + 110, y + 104, d["bio"], 12, c["dim"])
+    t_(W - 18, y + 26, f"[ desde {d['since']} ]", 10, c["dim"], "end")
     y += 146
 
-    # Métricas
+    # Métricas (2x2)
     cells = [("repos", d["repos"]), ("estrellas", d["stars"]),
              ("seguidores", d["followers"]), ("siguiendo", d["following"])]
-    cw = (W - 3 * 12) / 4
+    cw = (RW - 12) / 2
     for i, (lab, val) in enumerate(cells):
-        x = i * (cw + 12)
-        box(x, y, cw, 84, f"// {lab}")
-        t_(x + PAD - 6, y + 66, val, 32, c["acc"], weight=300)
-    y += 100
+        x, yy = RX + (i % 2) * (cw + 12), y + (i // 2) * (mh + 12)
+        box(x, yy, cw, mh, f"// {lab}")
+        t_(x + 18, yy + mh - 18, val, 34, c["acc"], weight=300)
+    y = ah + 16
 
     # Lenguajes + proyecto destacado
     half = (W - 12) / 2
@@ -139,11 +156,11 @@ def render(d, t):
         pts += [(x, 50), (x + 30, 50), (x + 38, 44), (x + 46, 50), (x + 62, 50),
                 (x + 68, 56), (x + 76, 26), (x + 84, 62), (x + 90, 50)]
         x += 140
-    path = " ".join(f"{px},{y + py - 10}" for px, py in pts if px < W - 20)
+    path = " ".join(f"{px},{y + py}" for px, py in pts if px < W - 20)
     o.append(f'<polyline points="{path}" fill="none" stroke="{c["acc"]}" stroke-width="2" '
              f'stroke-linejoin="round" stroke-linecap="round"/>')
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%MZ")
-    t_(W - PAD, y + 26, f"actualizado {stamp}", 10, c["dim"], "end")
+    t_(W - 24, y + 14, f"actualizado {stamp}", 10, c["dim"], "end")
     y += 70
 
     return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{y}" '

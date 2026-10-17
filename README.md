@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="banner.svg" width="100%" alt="romartak — médico y programador">
+<img src="banner.svg" width="100%" alt="romartak — médico y vibe coder">
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="profiles/default/dark.svg">
@@ -8,9 +8,9 @@
   <img alt="Perfil de romartak" src="profiles/default/dark.svg" width="100%">
 </picture>
 
-**🩺 Médico · 💻 Programador**
+**🩺 Médico · ⚡ Vibe coder**
 <br>
-*Physician · Programmer*
+*Physician · Vibe coder*
 
 [![SDR-Kit](https://img.shields.io/badge/proyecto%20estrella-SDR--Kit-ffd400?labelColor=0b0e12)](https://github.com/romartak/sdrkit)
 ![Español](https://img.shields.io/badge/idioma-Espa%C3%B1ol-2dd4bf?labelColor=0b0e12)
@@ -22,10 +22,10 @@
 
 ## 👋 Sobre mí · About me
 
-Soy **médico** y me apasiona la **programación** y el **desarrollo de proyectos**: convertir ideas en herramientas
+Soy **médico** y me apasiona el **vibe coding** y el **desarrollo de proyectos**: convertir ideas en herramientas
 que funcionan, que se documentan bien y que cualquiera puede usar y mejorar.
 
-I'm a **physician** who loves **programming** and **building projects**: turning ideas into tools that work, are
+I'm a **physician** who loves **vibe coding** and **building projects**: turning ideas into tools that work, are
 well documented, and that anyone can use and improve.
 
 ## 🚀 Proyecto destacado · Featured project
