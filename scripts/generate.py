@@ -225,9 +225,9 @@ def render(d, t):
 
 
 def banner():
-    """banner.svg animado: nombre con degradado, ECG que se dibuja y frases que rotan."""
+    """banner.svg animado: título con degradado, doble hélice de ADN que gira y frases que rotan."""
     a, b = THEMES["dark"]["acc"], THEMES["dark"]["acc2"]
-    phrases = ["médico en formación", "vibe coder", "construyendo SDR-Kit", "ideas → herramientas"]
+    phrases = ["médico en formación", "construyendo herramientas de salud con IA", "ideas → herramientas", "código + medicina"]
     n, per = len(phrases), 3.0
     css = "".join(
         f".p{i}{{opacity:0;animation:ph{i} {n * per}s infinite}}"
@@ -239,11 +239,25 @@ def banner():
         f'<tspan fill="{a}">&gt;</tspan> {escape(ph)}</text>' for i, ph in enumerate(phrases))
     grid = "".join(f'<line x1="{x}" y1="0" x2="{x}" y2="300" />' for x in range(0, 1001, 25)) + \
            "".join(f'<line x1="0" y1="{y}" x2="1000" y2="{y}" />' for y in range(0, 301, 25))
-    ecg = ecg_path(0, 1000, 258, 1.1)
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="romartak — médico y vibe coder">
+    # ADN: cada punto sube y baja con un desfase; las dos hebras van en contrafase y los
+    # peldaños se encogen al cruzarse, lo que da la sensación de que la hélice gira
+    period, n_dots, amp, base = 4.0, 34, 20, 252
+    dots = []
+    for k in range(n_dots):
+        x = 40 + k * (920 / (n_dots - 1))
+        d = -period * k / 14
+        dots.append(f'<line class="rung" x1="{x:.1f}" y1="{base - amp}" x2="{x:.1f}" y2="{base + amp}" '
+                    f'style="animation-delay:{d:.2f}s"/>')
+        for strand, color, off in (("sa", a, 0), ("sb", b, period / 2)):
+            dots.append(f'<circle class="{strand}" cx="{x:.1f}" cy="{base}" r="3.6" fill="{color}" '
+                        f'style="animation-delay:{d - off:.2f}s"/>')
+    helix = "".join(dots)
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="Medical vibe coder · AI researcher · health developer">
 <style>
-.draw{{stroke-dasharray:1000;stroke-dashoffset:1000;animation:draw 5s linear infinite}}
-@keyframes draw{{0%{{stroke-dashoffset:1000;opacity:1}}80%{{stroke-dashoffset:0;opacity:1}}94%{{stroke-dashoffset:0;opacity:0}}100%{{stroke-dashoffset:1000;opacity:0}}}}
+.sa,.sb{{animation:wave {period}s ease-in-out infinite;transform-box:fill-box;transform-origin:center}}
+@keyframes wave{{0%,100%{{transform:translateY(-{amp}px) scale(1.25);opacity:1}}50%{{transform:translateY({amp}px) scale(.6);opacity:.35}}}}
+.rung{{stroke:#2a3a45;stroke-width:1.5;animation:rung {period / 2}s ease-in-out infinite;transform-box:fill-box;transform-origin:center}}
+@keyframes rung{{0%,100%{{transform:scaleY(1);opacity:.9}}50%{{transform:scaleY(.05);opacity:.2}}}}
 .float{{animation:float 6s ease-in-out infinite}}@keyframes float{{50%{{transform:translateY(-4px)}}}}
 .cur{{animation:blink 1s steps(1) infinite}}@keyframes blink{{50%{{opacity:0}}}}
 {css}
@@ -256,12 +270,11 @@ def banner():
 <rect width="1000" height="300" rx="18" fill="url(#bg)"/>
 <g stroke="#fff" stroke-opacity=".04">{grid}</g>
 <g class="float">
-<text x="500" y="124" text-anchor="middle" font-family="{MONO}" font-size="92" font-weight="800" letter-spacing="6" fill="url(#g)" filter="url(#glow)">ROMARTAK</text>
-<text x="500" y="156" text-anchor="middle" font-family="{MONO}" font-size="15" letter-spacing="8" fill="#7d8b99">MÉDICO · VIBE CODER</text>
+<text x="500" y="112" text-anchor="middle" font-family="{MONO}" font-size="62" font-weight="800" letter-spacing="3" fill="url(#g)" filter="url(#glow)">MEDICAL VIBE CODER</text>
+<text x="500" y="150" text-anchor="middle" font-family="{MONO}" font-size="15" letter-spacing="6" fill="#7d8b99">AI RESEARCHER · HEALTH DEVELOPER</text>
 </g>
 {texts}
-<path d="{ecg}" pathLength="1000" fill="none" stroke="#1d2a33" stroke-width="2"/>
-<path class="draw" d="{ecg}" pathLength="1000" fill="none" stroke="{a}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" filter="url(#glow)"/>
+<g filter="url(#glow)">{helix}</g>
 </svg>
 """
 
