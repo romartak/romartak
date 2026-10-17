@@ -4,6 +4,7 @@
 Solo usa la biblioteca estándar. Con GITHUB_TOKEN en el entorno evita límites
 de la API; sin red usa valores de respaldo para que el SVG siempre se genere.
 """
+import hashlib
 import json
 import re
 import os
@@ -296,6 +297,17 @@ def terminal():
 """
 
 
+def bump_readme():
+    """Pone ?v=<huella> en las imágenes del README: si un SVG cambia, cambia su URL y
+    GitHub (y el navegador) dejan de mostrar la copia vieja que tenían en caché."""
+    readme = ROOT / "README.md"
+    text = readme.read_text(encoding="utf-8")
+    for rel in ("banner.svg", "terminal.svg", "profiles/default/dark.svg", "profiles/default/light.svg"):
+        v = hashlib.sha1((ROOT / rel).read_bytes()).hexdigest()[:8]
+        text = re.sub(r'(?<=["/ ])' + re.escape(rel) + r'(\?v=[0-9a-f]+)?(?=")', f"{rel}?v={v}", text)
+    readme.write_text(text, encoding="utf-8")
+
+
 if __name__ == "__main__":
     (ROOT / "banner.svg").write_text(banner(), encoding="utf-8")
     (ROOT / "terminal.svg").write_text(terminal(), encoding="utf-8")
@@ -303,4 +315,5 @@ if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     for name, theme in THEMES.items():
         (OUT / f"{name}.svg").write_text(render(data, theme), encoding="utf-8")
+    bump_readme()
     print("ok:", OUT)
