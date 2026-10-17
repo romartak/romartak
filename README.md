@@ -1,11 +1,11 @@
 <div align="center">
 
-<img src="banner.svg?v=9f654352" width="100%" alt="romartak — médico y vibe coder">
+<img src="banner.svg?v=bee8acbb" width="100%" alt="romartak — médico y vibe coder">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="profiles/default/dark.svg?v=e8b8f24f">
-  <source media="(prefers-color-scheme: light)" srcset="profiles/default/light.svg?v=abdf954f">
-  <img alt="Perfil de romartak" src="profiles/default/dark.svg?v=e8b8f24f" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="profiles/default/dark.svg?v=3b1bea73">
+  <source media="(prefers-color-scheme: light)" srcset="profiles/default/light.svg?v=d5a77780">
+  <img alt="Perfil de romartak" src="profiles/default/dark.svg?v=3b1bea73" width="100%">
 </picture>
 
 <img src="terminal.svg?v=99d3a879" width="100%" alt="terminal de romartak">
