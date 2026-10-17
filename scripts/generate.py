@@ -16,6 +16,7 @@ USER = os.environ.get("PROFILE_USER", "romartak")
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "profiles" / "default"
 RAMP = " .:-=+*#%@"
+BG_PATTERN = "0 1 . 0 1 : 1 0 . 1 0 "
 W, PAD = 800, 24
 MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,'DejaVu Sans Mono',monospace"
 
@@ -116,7 +117,7 @@ def wrap(text, n):
 
 
 def ascii_avatar():
-    """Lee assets/avatar.txt (rampa vacío→denso)."""
+    """Lee assets/avatar.txt (rampa vacío→denso; "~" = fondo)."""
     return (ROOT / "assets" / "avatar.txt").read_text(encoding="utf-8").splitlines()
 
 
@@ -144,9 +145,14 @@ def render(d, t):
     # el avatar va siempre sobre panel oscuro, también en el tema claro
     o.append(f'<rect x="0" y="0" width="{AW}" height="{ah}" fill="{THEMES["dark"]["bg"]}" stroke="{c["line"]}"/>')
     t_(14, 26, "// avatar", 10, THEMES["dark"]["dim"])
-    o.append(f'<text font-family="{MONO}" font-size="6.7"  fill="{THEMES["dark"]["acc"]}" xml:space="preserve">'
-             + "".join(f'<tspan x="{(AW - 62 * 4.02) / 2:.1f}" y="{y + 40 + i * LH:.1f}">{escape(r)}</tspan>'
-                       for i, r in enumerate(avatar)) + "</text>")
+    # "~" marca el fondo: se rellena con un patrón tenue de dígitos y puntos (estilo terminal)
+    bg = ["".join(BG_PATTERN[(i * 7 + j * 13 + (i * j) % 5) % len(BG_PATTERN)] if ch == "~" else " "
+                  for j, ch in enumerate(r)) for i, r in enumerate(avatar)]
+    fg = [r.replace("~", " ") for r in avatar]
+    for rows_, color, op in ((bg, THEMES["dark"]["acc"], 0.22), (fg, THEMES["dark"]["acc"], 1)):
+        o.append(f'<text font-family="{MONO}" font-size="6.7" fill="{color}" fill-opacity="{op}" xml:space="preserve">'
+                 + "".join(f'<tspan x="{(AW - 62 * 4.02) / 2:.1f}" y="{y + 40 + i * LH:.1f}">{escape(r)}</tspan>'
+                           for i, r in enumerate(rows_)) + "</text>")
 
     # Cabecera
     box(RX, y, RW, 130, "// ident")
