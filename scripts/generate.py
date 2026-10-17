@@ -5,6 +5,7 @@ Solo usa la biblioteca estándar. Con GITHUB_TOKEN en el entorno evita límites
 de la API; sin red usa valores de respaldo para que el SVG siempre se genere.
 """
 import json
+import re
 import os
 import urllib.request
 from datetime import datetime, timezone
@@ -56,29 +57,41 @@ STYLE = """<style>
 <linearGradient id="name" x1="0" x2="1"><stop offset="0" stop-color="__A__"/><stop offset="1" stop-color="__B__"/></linearGradient></defs>"""
 
 
-def api(path):
+def api(path, raw=False):
     req = urllib.request.Request(f"https://api.github.com{path}")
     req.add_header("Accept", "application/vnd.github+json")
     if os.environ.get("GITHUB_TOKEN"):
         req.add_header("Authorization", f"Bearer {os.environ['GITHUB_TOKEN']}")
     with urllib.request.urlopen(req, timeout=20) as r:
-        return json.load(r)
+        return r if raw else json.load(r)
+
+
+def commit_count(repo):
+    """Número de commits de la rama principal (usa la cabecera Link de la paginación)."""
+    with api(f"/repos/{USER}/{repo}/commits?per_page=1", raw=True) as r:
+        m = re.search(r'page=(\d+)>; rel="last"', r.headers.get("Link", ""))
+        return int(m.group(1)) if m else len(json.load(r))
 
 
 def fetch():
     data = dict(name=USER, bio="médico · vibe coder", repos=2, followers=0,
-                following=0, stars=0, langs={"Shell": 60, "Python": 30, "JavaScript": 10}, since="2026",
+                commits=17, stars=0, langs={"Shell": 60, "Python": 30, "JavaScript": 10}, since="2026",
                 pinned=("sdrkit", "Analizador de espectro y radio multimodo en una Raspberry Pi Zero 2 W + RTL-SDR."))
     try:
         u = api(f"/users/{USER}")
         data.update(name=u.get("name") or USER, repos=u["public_repos"], followers=u["followers"],
-                    following=u["following"], since=u["created_at"][:4])
+                    since=u["created_at"][:4])
         repos = [r for r in api(f"/users/{USER}/repos?per_page=100&type=owner")
                  if not r["fork"]]
         data["stars"] = sum(r["stargazers_count"] for r in repos)
+        langs, commits = {}, 0
         for r in repos:
-            if r.get("language"):
-                data["langs"][r["language"]] = data["langs"].get(r["language"], 0) + r["size"] + 1
+            for name, size in api(f"/repos/{USER}/{r['name']}/languages").items():
+                langs[name] = langs.get(name, 0) + size
+            commits += commit_count(r["name"])
+        if langs:
+            data["langs"] = langs
+        data["commits"] = commits
         star = max(repos, key=lambda r: r["stargazers_count"], default=None)
         feat = next((r for r in repos if r["name"] == "sdrkit"), star)
         if feat:
@@ -144,7 +157,7 @@ def render(d, t):
 
     # Métricas (2x2)
     cells = [("repos", d["repos"]), ("estrellas", d["stars"]),
-             ("seguidores", d["followers"]), ("siguiendo", d["following"])]
+             ("commits", d["commits"]), ("seguidores", d["followers"])]
     cw = (RW - 12) / 2
     for i, (lab, val) in enumerate(cells):
         x, yy = RX + (i % 2) * (cw + 12), y + (i // 2) * (mh + 12)
@@ -170,7 +183,11 @@ def render(d, t):
     x2 = half + 12
     box(x2, y, half, 150, "// proyecto destacado")
     t_(x2 + 18, y + 56, f"▸ {d['pinned'][0]}", 15, c["acc2"], weight=600)
-    for i, ln in enumerate(wrap(d["pinned"][1], 44)[:4]):
+    desc = wrap(d["pinned"][1], 46)
+    if len(desc) > 3:
+        desc = desc[:3]
+        desc[2] = desc[2][:43].rstrip(" ,.") + "…"
+    for i, ln in enumerate(desc):
         t_(x2 + 18, y + 80 + i * 16, ln, 11, c["dim"])
     t_(x2 + 18, y + 140, f"github.com/{USER}/{d['pinned'][0]}", 10, c["acc"])
     y += 166
