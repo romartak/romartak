@@ -57,20 +57,21 @@ STYLE = """<style>
 <linearGradient id="name" x1="0" x2="1"><stop offset="0" stop-color="__A__"/><stop offset="1" stop-color="__B__"/></linearGradient></defs>"""
 
 
-def api(path, raw=False):
+def api(path, with_headers=False):
     req = urllib.request.Request(f"https://api.github.com{path}")
     req.add_header("Accept", "application/vnd.github+json")
     if os.environ.get("GITHUB_TOKEN"):
         req.add_header("Authorization", f"Bearer {os.environ['GITHUB_TOKEN']}")
     with urllib.request.urlopen(req, timeout=20) as r:
-        return r if raw else json.load(r)
+        body = json.load(r)
+        return (body, dict(r.headers)) if with_headers else body
 
 
 def commit_count(repo):
     """Número de commits de la rama principal (usa la cabecera Link de la paginación)."""
-    with api(f"/repos/{USER}/{repo}/commits?per_page=1", raw=True) as r:
-        m = re.search(r'page=(\d+)>; rel="last"', r.headers.get("Link", ""))
-        return int(m.group(1)) if m else len(json.load(r))
+    body, headers = api(f"/repos/{USER}/{repo}/commits?per_page=1", with_headers=True)
+    m = re.search(r'page=(\d+)>; rel="last"', headers.get("Link", ""))
+    return int(m.group(1)) if m else len(body)
 
 
 def fetch():
@@ -97,6 +98,8 @@ def fetch():
         if feat:
             data["pinned"] = (feat["name"], feat.get("description") or "")
     except Exception as e:  # sin red o límite de API: se usan los respaldos
+        if os.environ.get("GITHUB_ACTIONS"):   # en el Action no se publican datos inventados
+            raise SystemExit(f"error leyendo la API de GitHub: {e}")
         print(f"aviso: usando datos de respaldo ({e})")
     return data
 
