@@ -31,6 +31,31 @@ ASCII_NAME = [
 ]
 
 
+BEAT = [(0, 0), (22, 0), (28, -7), (34, 0), (50, 0), (54, 5), (60, -40), (66, 18),
+        (72, 0), (90, 0), (101, -11), (112, 0), (150, 0)]   # P-QRS-T
+
+
+def ecg_path(x0, x1, base, amp=1.0):
+    """Trazado ECG realista (ondas P, QRS y T) repetido entre x0 y x1."""
+    pts, x = [], x0
+    while x < x1:
+        pts += [(x + bx, base + by * amp) for bx, by in BEAT]
+        x += 150
+    return "M" + " L".join(f"{px:.1f},{py:.1f}" for px, py in pts if px <= x1)
+
+
+STYLE = """<style>
+.draw{stroke-dasharray:1000;stroke-dashoffset:1000;animation:draw 4s linear infinite}
+@keyframes draw{0%{stroke-dashoffset:1000;opacity:1}75%{stroke-dashoffset:0;opacity:1}92%{stroke-dashoffset:0;opacity:0}100%{stroke-dashoffset:1000;opacity:0}}
+.cur{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.glow{filter:url(#glow)}
+</style>
+<defs><filter id="glow" x="-5%" y="-50%" width="110%" height="200%"><feGaussianBlur stdDeviation="2.2" result="b"/>
+<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<linearGradient id="name" x1="0" x2="1"><stop offset="0" stop-color="__A__"/><stop offset="1" stop-color="__B__"/></linearGradient></defs>"""
+
+
 def api(path):
     req = urllib.request.Request(f"https://api.github.com{path}")
     req.add_header("Accept", "application/vnd.github+json")
@@ -109,8 +134,9 @@ def render(d, t):
 
     # Cabecera
     box(RX, y, RW, 130, "// ident")
-    for i, row in enumerate(ASCII_NAME):
-        t_(RX + 18, y + 56 + i * 20, row, 20, c["acc"], weight=700)
+    o.append(f'<text x="{RX + 18}" y="{y + 70}" font-family="{MONO}" font-size="46" font-weight="800" '
+             f'letter-spacing="3" fill="url(#name)" class="glow">ROMARTAK</text>')
+    o.append(f'<rect class="cur" x="{RX + 18 + 8 * 30.6 + 8:.0f}" y="{y + 36}" width="16" height="36" fill="{c["acc2"]}"/>')
     t_(RX + 18, y + 104, f"@{USER}", 14, c["acc2"])
     t_(RX + 18 + 110, y + 104, d["bio"], 12, c["dim"])
     t_(W - 18, y + 26, f"[ desde {d['since']} ]", 10, c["dim"], "end")
@@ -149,26 +175,104 @@ def render(d, t):
     t_(x2 + 18, y + 140, f"github.com/{USER}/{d['pinned'][0]}", 10, c["acc"])
     y += 166
 
-    # Pulso (ECG)
-    box(0, y, W, 70, "// pulso")
-    pts, x = [], 20
-    while x < W - 40:
-        pts += [(x, 50), (x + 30, 50), (x + 38, 44), (x + 46, 50), (x + 62, 50),
-                (x + 68, 56), (x + 76, 26), (x + 84, 62), (x + 90, 50)]
-        x += 140
-    path = " ".join(f"{px},{y + py}" for px, py in pts if px < W - 20)
-    o.append(f'<polyline points="{path}" fill="none" stroke="{c["acc"]}" stroke-width="2" '
-             f'stroke-linejoin="round" stroke-linecap="round"/>')
+    # Pulso (ECG): papel milimetrado + trazo animado con brillo
+    PH = 96
+    box(0, y, W, PH, "// pulso")
+    for gx in range(0, W + 1, 20):
+        o.append(f'<line x1="{gx}" y1="{y + 30}" x2="{gx}" y2="{y + PH}" stroke="{c["line"]}" stroke-width="0.5"/>')
+    for gy in range(30, PH + 1, 20):
+        o.append(f'<line x1="0" y1="{y + gy}" x2="{W}" y2="{y + gy}" stroke="{c["line"]}" stroke-width="0.5"/>')
+    d_ = ecg_path(10, W - 10, y + 70, 0.9)
+    o.append(f'<path d="{d_}" pathLength="1000" fill="none" stroke="{c["line"]}" stroke-width="2"/>')
+    o.append(f'<path class="draw glow" d="{d_}" pathLength="1000" fill="none" stroke="{c["acc"]}" '
+             f'stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>')
+    t_(W - 24, y + 14, "72 bpm", 10, c["acc2"], "end")
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%MZ")
-    t_(W - 24, y + 14, f"actualizado {stamp}", 10, c["dim"], "end")
-    y += 70
+    t_(100, y + 26, f"actualizado {stamp}", 10, c["dim"])
+    y += PH
 
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{y}" '
-            f'viewBox="0 0 {W} {y}" role="img" aria-label="Perfil de {USER}">'
-            f'<rect width="{W}" height="{y}" fill="{c["bg"]}"/>' + "".join(o) + "</svg>\n")
+    head = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{y}" '
+            f'viewBox="0 0 {W} {y}" role="img" aria-label="Perfil de {USER}">')
+    style = STYLE.replace("__A__", c["acc"]).replace("__B__", c["acc2"])
+    return head + style + f'<rect width="{W}" height="{y}" fill="{c["bg"]}"/>' + "".join(o) + "</svg>\n"
+
+
+def banner():
+    """banner.svg animado: nombre con degradado, ECG que se dibuja y frases que rotan."""
+    a, b = THEMES["dark"]["acc"], THEMES["dark"]["acc2"]
+    phrases = ["médico en formación", "vibe coder", "construyendo SDR-Kit", "ideas → herramientas"]
+    n, per = len(phrases), 3.0
+    css = "".join(
+        f".p{i}{{opacity:0;animation:ph{i} {n * per}s infinite}}"
+        f"@keyframes ph{i}{{0%{{opacity:0}}{100 * i / n:.1f}%{{opacity:0}}{100 * i / n + 2:.1f}%{{opacity:1}}"
+        f"{100 * (i + 1) / n - 3:.1f}%{{opacity:1}}{100 * (i + 1) / n - 1:.1f}%{{opacity:0}}100%{{opacity:0}}}}"
+        for i in range(n))
+    texts = "".join(
+        f'<text class="p{i}" x="500" y="196" text-anchor="middle" font-family="{MONO}" font-size="22" fill="#9fb3c8">'
+        f'<tspan fill="{a}">&gt;</tspan> {escape(ph)}</text>' for i, ph in enumerate(phrases))
+    grid = "".join(f'<line x1="{x}" y1="0" x2="{x}" y2="300" />' for x in range(0, 1001, 25)) + \
+           "".join(f'<line x1="0" y1="{y}" x2="1000" y2="{y}" />' for y in range(0, 301, 25))
+    ecg = ecg_path(0, 1000, 258, 1.1)
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="romartak — médico y vibe coder">
+<style>
+.draw{{stroke-dasharray:1000;stroke-dashoffset:1000;animation:draw 5s linear infinite}}
+@keyframes draw{{0%{{stroke-dashoffset:1000;opacity:1}}80%{{stroke-dashoffset:0;opacity:1}}94%{{stroke-dashoffset:0;opacity:0}}100%{{stroke-dashoffset:1000;opacity:0}}}}
+.float{{animation:float 6s ease-in-out infinite}}@keyframes float{{50%{{transform:translateY(-4px)}}}}
+.cur{{animation:blink 1s steps(1) infinite}}@keyframes blink{{50%{{opacity:0}}}}
+{css}
+</style>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#060b0f"/><stop offset="1" stop-color="#0b2a33"/></linearGradient>
+<linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="{a}"/><stop offset="1" stop-color="{b}"/></linearGradient>
+<filter id="glow" x="-5%" y="-50%" width="110%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1000" height="300" rx="18" fill="url(#bg)"/>
+<g stroke="#fff" stroke-opacity=".04">{grid}</g>
+<g class="float">
+<text x="500" y="124" text-anchor="middle" font-family="{MONO}" font-size="92" font-weight="800" letter-spacing="6" fill="url(#g)" filter="url(#glow)">ROMARTAK</text>
+<text x="500" y="156" text-anchor="middle" font-family="{MONO}" font-size="15" letter-spacing="8" fill="#7d8b99">MÉDICO · VIBE CODER</text>
+</g>
+{texts}
+<path d="{ecg}" pathLength="1000" fill="none" stroke="#1d2a33" stroke-width="2"/>
+<path class="draw" d="{ecg}" pathLength="1000" fill="none" stroke="{a}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" filter="url(#glow)"/>
+</svg>
+"""
+
+
+def terminal():
+    """terminal.svg: ventana de terminal con líneas que se escriben solas."""
+    a, b = THEMES["dark"]["acc"], THEMES["dark"]["acc2"]
+    lines = [
+        ("$ whoami", "romartak — médico en formación & vibe coder"),
+        ("$ cat mision.txt", "convertir ideas en herramientas que funcionan"),
+        ("$ ls proyectos/", "sdrkit/  investigaciones-personales/  ..."),
+        ("$ ./sdrkit --status", "radio 0.5 → 1766 MHz · Raspberry Pi Zero 2 W · OK"),
+    ]
+    step, css, body = 2.4, [], []
+    tot = len(lines) * step + 3
+    for i, (cmd, out) in enumerate(lines):
+        t0 = i * step
+        y1, y2 = 74 + i * 44, 74 + i * 44 + 20
+        css.append(f".l{i}{{opacity:0;animation:s{i} {tot}s infinite}}"
+                   f"@keyframes s{i}{{0%,{max(100 * t0 / tot - 0.1, 0):.1f}%{{opacity:0}}"
+                   f"{100 * t0 / tot:.1f}%,94%{{opacity:1}}100%{{opacity:0}}}}")
+        body.append(f'<g class="l{i}"><text x="28" y="{y1}" font-family="{MONO}" font-size="15" fill="{a}">{escape(cmd)}</text>'
+                    f'<text x="28" y="{y2}" font-family="{MONO}" font-size="13" fill="#9fb3c8">{escape(out)}</text></g>')
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 270" role="img" aria-label="terminal de romartak">
+<style>{"".join(css)}.cur{{animation:blink 1s steps(1) infinite}}@keyframes blink{{50%{{opacity:0}}}}</style>
+<rect width="1000" height="270" rx="12" fill="#060b0f" stroke="#1d2a33"/>
+<rect width="1000" height="34" rx="12" fill="#0b1319"/><rect y="20" width="1000" height="14" fill="#0b1319"/>
+<circle cx="22" cy="17" r="6" fill="#ff5f56"/><circle cx="42" cy="17" r="6" fill="#ffbd2e"/><circle cx="62" cy="17" r="6" fill="#27c93f"/>
+<text x="500" y="22" text-anchor="middle" font-family="{MONO}" font-size="12" fill="#7d8b99">romartak@perfil: ~</text>
+{"".join(body)}
+<text x="28" y="{74 + 4 * 44}" font-family="{MONO}" font-size="15" fill="{a}">$ <tspan class="cur" fill="{b}">█</tspan></text>
+</svg>
+"""
 
 
 if __name__ == "__main__":
+    (ROOT / "banner.svg").write_text(banner(), encoding="utf-8")
+    (ROOT / "terminal.svg").write_text(terminal(), encoding="utf-8")
     data = fetch()
     OUT.mkdir(parents=True, exist_ok=True)
     for name, theme in THEMES.items():

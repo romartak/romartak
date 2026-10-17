@@ -8,9 +8,11 @@
   <img alt="Perfil de romartak" src="profiles/default/dark.svg" width="100%">
 </picture>
 
+<img src="terminal.svg" width="100%" alt="terminal de romartak">
+
 **🩺 Médico · ⚡ Vibe coder**
 <br>
-*Physician · Vibe coder*
+*Medical student · Vibe coder*
 
 [![SDR-Kit](https://img.shields.io/badge/proyecto%20estrella-SDR--Kit-ffd400?labelColor=0b0e12)](https://github.com/romartak/sdrkit)
 ![Español](https://img.shields.io/badge/idioma-Espa%C3%B1ol-2dd4bf?labelColor=0b0e12)
@@ -22,11 +24,11 @@
 
 ## 👋 Sobre mí · About me
 
-Soy **médico** y me apasiona el **vibe coding** y el **desarrollo de proyectos**: convertir ideas en herramientas
-que funcionan, que se documentan bien y que cualquiera puede usar y mejorar.
+Soy **médico en formación** y me apasiona el **vibe coding** y el **desarrollo de proyectos**: convertir ideas en
+herramientas que funcionan, que se documentan bien y que cualquiera puede usar y mejorar.
 
-I'm a **physician** who loves **vibe coding** and **building projects**: turning ideas into tools that work, are
-well documented, and that anyone can use and improve.
+I'm a **medical student** (a doctor in the making) who loves **vibe coding** and **building projects**: turning ideas
+into tools that work, are well documented, and that anyone can use and improve.
 
 ## 🚀 Proyecto destacado · Featured project
 
@@ -75,7 +77,9 @@ Analizador de espectro, radio multimodo y decodificador de bolsillo con una **Ra
 
 | 🩺 Medicina | 💻 Código | 🤝 Comunidad |
 |---|---|---|
-| Rigor, método y cuidado por las personas | Soluciones claras, probadas y documentadas | Proyectos abiertos, bilingües y para compartir |
+| Rigor, método y cuidado por las personas, al servicio del desarrollo de la sociedad y de la medicina | Soluciones claras, probadas y documentadas, a medio camino entre el vibe coding y la medicina | Proyectos que siempre he querido realizar, ligados a mis investigaciones personales |
+
+<sub>🩺 Medicine: rigor, method and care for people, in service of society and of medicine · 💻 Code: clear, tested, documented solutions where vibe coding meets medicine · 🤝 Community: projects I've always wanted to build, tied to my personal research</sub>
 
 ## 📊 GitHub
 
