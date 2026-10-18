@@ -77,7 +77,7 @@ def commit_count(repo):
 
 
 def fetch():
-    data = dict(name=USER, bio="médico · vibe coder", repos=2, followers=0,
+    data = dict(name=USER, bio="doctor · programmer", repos=2, followers=0,
                 commits=17, stars=0, langs={"Shell": 60, "Python": 30, "JavaScript": 10}, since="2026",
                 pinned=("sdrkit", "Analizador de espectro y radio multimodo en una Raspberry Pi Zero 2 W + RTL-SDR."))
     try:
@@ -227,7 +227,7 @@ def render(d, t):
 def banner():
     """banner.svg animado: título con degradado, doble hélice de ADN que gira y frases que rotan."""
     a, b = THEMES["dark"]["acc"], THEMES["dark"]["acc2"]
-    phrases = ["médico en formación", "construyendo herramientas de salud con IA", "ideas → herramientas", "código + medicina"]
+    phrases = ["doctor en formación", "construyendo herramientas de salud con IA", "ideas → herramientas", "código + medicina"]
     n, per = len(phrases), 3.0
     css = "".join(
         f".p{i}{{opacity:0;animation:ph{i} {n * per}s infinite}}"
@@ -252,7 +252,7 @@ def banner():
             dots.append(f'<circle class="{strand}" cx="{x:.1f}" cy="{base}" r="3.6" fill="{color}" '
                         f'style="animation-delay:{d - off:.2f}s"/>')
     helix = "".join(dots)
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="Médico · vibe coder · AI research · health dev">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="Doctor · programmer · AI research · health dev">
 <style>
 .sa,.sb{{animation:wave {period}s ease-in-out infinite;transform-box:fill-box;transform-origin:center}}
 @keyframes wave{{0%,100%{{transform:translateY(-{amp}px) scale(1.25);opacity:1}}50%{{transform:translateY({amp}px) scale(.6);opacity:.35}}}}
@@ -270,7 +270,7 @@ def banner():
 <rect width="1000" height="300" rx="18" fill="url(#bg)"/>
 <g stroke="#fff" stroke-opacity=".04">{grid}</g>
 <g class="float">
-<text x="500" y="112" text-anchor="middle" font-family="{MONO}" font-size="62" font-weight="800" letter-spacing="3" fill="url(#g)" filter="url(#glow)">MÉDICO · VIBE CODER</text>
+<text x="500" y="112" text-anchor="middle" font-family="{MONO}" font-size="62" font-weight="800" letter-spacing="3" fill="url(#g)" filter="url(#glow)">DOCTOR · PROGRAMMER</text>
 <text x="500" y="150" text-anchor="middle" font-family="{MONO}" font-size="15" letter-spacing="5" fill="#7d8b99">AI RESEARCH · HEALTH DEV · COOL RANDOM PROJECTS</text>
 </g>
 {texts}
@@ -283,7 +283,7 @@ def terminal():
     """terminal.svg: ventana de terminal con líneas que se escriben solas."""
     a, b = THEMES["dark"]["acc"], THEMES["dark"]["acc2"]
     lines = [
-        ("$ whoami", "romartak — médico en formación & vibe coder"),
+        ("$ whoami", "romartak — doctor en formación & programmer"),
         ("$ cat mision.txt", "convertir ideas en herramientas que funcionan"),
         ("$ ls proyectos/", "sdrkit/  investigaciones-personales/  ..."),
         ("$ ./sdrkit --status", "radio 0.5 → 1766 MHz · Raspberry Pi Zero 2 W · OK"),
