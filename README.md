@@ -3,9 +3,9 @@
 <img src="banner.svg?v=4e522b28" width="100%" alt="romartak — doctor y programmer">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="profiles/default/dark.svg?v=3a09ecdc">
-  <source media="(prefers-color-scheme: light)" srcset="profiles/default/light.svg?v=9f869b3e">
-  <img alt="Perfil de romartak" src="profiles/default/dark.svg?v=3a09ecdc" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="profiles/default/dark.svg?v=36dea892">
+  <source media="(prefers-color-scheme: light)" srcset="profiles/default/light.svg?v=c5aafe8d">
+  <img alt="Perfil de romartak" src="profiles/default/dark.svg?v=36dea892" width="100%">
 </picture>
 
 <img src="terminal.svg?v=d5bf7d63" width="100%" alt="terminal de romartak">
